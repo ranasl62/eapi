@@ -14,7 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        return "Rana";
     }
 
     /**
@@ -46,7 +46,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        dd($product);
     }
 
     /**
