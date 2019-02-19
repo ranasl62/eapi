@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Response;
 use App\Model\Product;
 use App\Http\Resources\Product\ProductResource;
 use App\Http\Resources\Product\ProductCollection;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProductRequest;
 
 class ProductController extends Controller
 {
@@ -14,6 +16,12 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function _construct()
+    {
+        $this->middleware('auth:api')->except('index','show');
+    } 
+
     public function index()
     {
         return ProductCollection::collection(Product::paginate(5));
@@ -35,9 +43,18 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        //
+        $product = new Product();
+        $product->name       = $request->name;
+        $product->detail     = $request->description;
+        $product->stock      = $request->stock;
+        $product->price      = $request->price;
+        $product->discount   = $request->discount;
+        $product->save();
+        return response([
+                'data' => new ProductResource($product)
+        ],201);
     }
 
     /**
@@ -59,7 +76,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        
     }
 
     /**
@@ -71,7 +88,16 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        try{
+            $request['detail']=$request->description;
+            unset($request['description']);
+            $product->update($request->all());
+            return response([
+                    'data' => new ProductResource($product)
+            ],202);
+    }catch(\Exception $a){
+        return $a;
+    }
     }
 
     /**
@@ -82,6 +108,12 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        try{
+
+            $product->delete();
+            return response([], Response::HTTP_NO_CONTENT);
+        }catch(\Exception $a){
+            return $a;
+        }
     }
 }
